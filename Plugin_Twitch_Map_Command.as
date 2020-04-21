@@ -1,4 +1,4 @@
-#name "!map command"
+#name "Twitch !map command"
 #author "Monkeypac"
 #category "Twitch"
 #include "TwitchChat.as"
@@ -33,7 +33,7 @@ string StripFormatCodes(string s)
 
 void RenderMenu()
 {
-    if (UI::MenuItem("Monkey twitch!")) {
+    if (UI::MenuItem("!map")) {
 	auto currentMap = GetCurrentMap();
 	if (currentMap !is null) {
 	    auto mapName = GetMapName(currentMap);
