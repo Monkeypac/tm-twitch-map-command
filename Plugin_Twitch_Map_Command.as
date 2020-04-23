@@ -43,7 +43,7 @@ void doTheJob() {
     if (currentMap !is null) {
 	auto mapName = GetMapName(currentMap);
 	auto author = GetAuthor(currentMap);
-	string message = mapName + " by " + author + "." + " See https://tm.mania-exchange.com/tracks/" + GetMapMXId(currentMap);
+	string message = mapName + " by " + author + ". " + GetMapMXId(currentMap);
 	Twitch::SendMessage("!commands edit !map " + message);
     }
 }
@@ -53,7 +53,7 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
 
     if (!sock.Connect("api.mania-exchange.com", 80)) {
 	print("Couldn't initiate socket connection.");
-	return "";
+	return "It's not on mania-exchange !";
     }
 
     print(Time::Now + " Connecting to host...");
@@ -74,7 +74,7 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
 	)) {
 	// If this fails, the socket might not be open. Something is wrong!
 	print("Couldn't send data.");
-	return "";
+	return "It's not on mania-exchange !";
     }
 
     print(Time::Now + " Waiting for headers...");
@@ -153,10 +153,13 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
     sock.Close();
 
     auto titi = Json::Parse(response);
+    if (titi.GetType() != Json::Type::Array || titi.Length == 0) {
+	return "It's not on mania-exchange !";
+    }
 
     int toto = titi[0]["TrackID"];
 
-    string result = "" + toto;
+    string result = "See https://tm.mania-exchange.com/tracks/" + toto;
 
     return result;
 }
