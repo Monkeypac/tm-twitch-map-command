@@ -19,6 +19,8 @@ CGameManiaPlanet@ g_app;
 bool g_auto_update;
 string g_last_challenge_id;
 
+// About the Map
+
 CGameCtnChallenge@ GetCurrentMap()
 {
     return g_app.RootMap;
@@ -39,52 +41,29 @@ string StripFormatCodes(string s)
     return Regex::Replace(s, "\\$([0-9a-fA-F]{1,3}|[iIoOnNmMwWsSzZtTgG<>]|[lLhHpP](\\[[^\\]]+\\])?)", "");
 }
 
-void RenderMenu()
-{
-    if (UI::MenuItem("Manually update !map")) {
-	startnew(doTheJob);
+// Retrieve the map ID from MX and format the url
+// If the map has been updated on MX, it won't be found
+string GetMapMXLinkMessage(CGameCtnChallenge@ challenge) {
+    Json::Value payload = GetMXPayload(challenge.EdChallengeId);
+    if (payload.GetType() != Json::Type::Array || payload.Length == 0) {
+	return "";
     }
 
-    if (UI::MenuItem("Auto update !map", "", g_auto_update)) {
-	if (g_auto_update) {
-	    g_auto_update = false;
-	} else {
-	    g_auto_update = true;
-	}
-    }
+    int trackId = payload[0]["TrackID"];
+
+    string result = " See https://tm.mania-exchange.com/tracks/" + trackId;
+
+    return result;
 }
 
-bool shouldAutoUpdate() {
-    if (!g_auto_update) {
-	return false;
-    }
-
-    auto currentMap = GetCurrentMap();
-
-    return currentMap !is null && currentMap.EdChallengeId != g_last_challenge_id;
-}
-
-void doTheJob() {
-    auto currentMap = GetCurrentMap();
-    if (currentMap !is null) {
-	doIt(currentMap);
-    }
-}
-
-void doIt(CGameCtnChallenge@ currentMap) {
-    auto mapName = GetMapName(currentMap);
-    auto author = GetAuthor(currentMap);
-    string message = mapName + " by " + author + ". " + GetMapMXId(currentMap);
-    Twitch::SendMessage("!commands edit !map " + message);
-    g_last_challenge_id = currentMap.EdChallengeId;
-}
-
-string GetMapMXId(CGameCtnChallenge@ challenge) {
+// Network
+// Tweaked code from the tutorial
+Json::Value GetMXPayload(string mapId) {
     auto sock = Net::Socket();
 
     if (!sock.Connect("api.mania-exchange.com", 80)) {
 	print("Couldn't initiate socket connection.");
-	return "";
+	return Json::Value();
     }
 
     print(Time::Now + " Connecting to host...");
@@ -97,7 +76,7 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
     print(Time::Now + " Connected! Sending request...");
 
     if (!sock.WriteRaw(
-	    "GET /tm/maps/" + challenge.EdChallengeId + " HTTP/1.1\r\n" +
+	    "GET /tm/maps/" + mapId + " HTTP/1.1\r\n" +
 	    "Host: api.mania-exchange.com\r\n" +
 	    "User-agent: Plugin for TM\r\n" +
 	    "Connection: close\r\n" +
@@ -105,7 +84,7 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
 	)) {
 	// If this fails, the socket might not be open. Something is wrong!
 	print("Couldn't send data.");
-	return "";
+	return Json::Value();
     }
 
     print(Time::Now + " Waiting for headers...");
@@ -183,18 +162,10 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
     // Close the socket.
     sock.Close();
 
-    auto titi = Json::Parse(response);
-    if (titi.GetType() != Json::Type::Array || titi.Length == 0) {
-	return "";
-    }
-
-    int toto = titi[0]["TrackID"];
-
-    string result = "See https://tm.mania-exchange.com/tracks/" + toto;
-
-    return result;
+    return Json::Parse(response);
 }
 
+// for debug purposes
 void printJson(Json::Value titi) {
     if (titi.GetType() == Json::Type::String) {
 	print("String");
@@ -215,6 +186,18 @@ void printJson(Json::Value titi) {
 	print("Null");
     }
 }
+
+// Void callbacks for twitch
+class ChatCallbacks : Twitch::ICallbacks
+{
+    void OnMessage(IRC::Message@ msg)
+    {}
+
+    void OnUserNotice(IRC::Message@ msg)
+    {}
+}
+
+// Main functions
 
 void Main()
 {
@@ -246,11 +229,42 @@ void Main()
     }
 }
 
-class ChatCallbacks : Twitch::ICallbacks
-{
-    void OnMessage(IRC::Message@ msg)
-    {}
+bool shouldAutoUpdate() {
+    if (!g_auto_update) {
+	return false;
+    }
 
-    void OnUserNotice(IRC::Message@ msg)
-    {}
+    auto currentMap = GetCurrentMap();
+
+    return currentMap !is null && currentMap.EdChallengeId != g_last_challenge_id;
+}
+
+void doTheJob() {
+    auto currentMap = GetCurrentMap();
+    if (currentMap !is null) {
+	doIt(currentMap);
+    }
+}
+
+void doIt(CGameCtnChallenge@ currentMap) {
+    auto mapName = GetMapName(currentMap);
+    auto author = GetAuthor(currentMap);
+    string message = mapName + " by " + author + "." + GetMapMXLinkMessage(currentMap);
+    Twitch::SendMessage("!commands edit !map " + message);
+    g_last_challenge_id = currentMap.EdChallengeId;
+}
+
+void RenderMenu()
+{
+    if (UI::MenuItem("Manually update !map")) {
+	startnew(doTheJob);
+    }
+
+    if (UI::MenuItem("Auto update !map", "", g_auto_update)) {
+	if (g_auto_update) {
+	    g_auto_update = false;
+	} else {
+	    g_auto_update = true;
+	}
+    }
 }
