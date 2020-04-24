@@ -9,7 +9,15 @@ string Setting_TwitchToken = "YourOauth";
 string Setting_TwitchNickname = "YouNickName";
 string Setting_TwitchChannel = "#yourchannel";
 
+/////////////////////////////////////////////////
+// WARNING
+//
+// Don't edit below unless you want to try stuff
+////////////////////////////////////////////////
+
 CGameManiaPlanet@ g_app;
+bool g_auto_update;
+string g_last_challenge_id;
 
 CGameCtnChallenge@ GetCurrentMap()
 {
@@ -33,19 +41,42 @@ string StripFormatCodes(string s)
 
 void RenderMenu()
 {
-    if (UI::MenuItem("!map")) {
+    if (UI::MenuItem("Manually update !map")) {
 	startnew(doTheJob);
     }
+
+    if (UI::MenuItem("Auto update !map", "", g_auto_update)) {
+	if (g_auto_update) {
+	    g_auto_update = false;
+	} else {
+	    g_auto_update = true;
+	}
+    }
+}
+
+bool shouldAutoUpdate() {
+    if (!g_auto_update) {
+	return false;
+    }
+
+    auto currentMap = GetCurrentMap();
+
+    return currentMap !is null && currentMap.EdChallengeId != g_last_challenge_id;
 }
 
 void doTheJob() {
     auto currentMap = GetCurrentMap();
     if (currentMap !is null) {
-	auto mapName = GetMapName(currentMap);
-	auto author = GetAuthor(currentMap);
-	string message = mapName + " by " + author + ". " + GetMapMXId(currentMap);
-	Twitch::SendMessage("!commands edit !map " + message);
+	doIt(currentMap);
     }
+}
+
+void doIt(CGameCtnChallenge@ currentMap) {
+    auto mapName = GetMapName(currentMap);
+    auto author = GetAuthor(currentMap);
+    string message = mapName + " by " + author + ". " + GetMapMXId(currentMap);
+    Twitch::SendMessage("!commands edit !map " + message);
+    g_last_challenge_id = currentMap.EdChallengeId;
 }
 
 string GetMapMXId(CGameCtnChallenge@ challenge) {
@@ -53,7 +84,7 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
 
     if (!sock.Connect("api.mania-exchange.com", 80)) {
 	print("Couldn't initiate socket connection.");
-	return "It's not on mania-exchange !";
+	return "";
     }
 
     print(Time::Now + " Connecting to host...");
@@ -74,7 +105,7 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
 	)) {
 	// If this fails, the socket might not be open. Something is wrong!
 	print("Couldn't send data.");
-	return "It's not on mania-exchange !";
+	return "";
     }
 
     print(Time::Now + " Waiting for headers...");
@@ -154,7 +185,7 @@ string GetMapMXId(CGameCtnChallenge@ challenge) {
 
     auto titi = Json::Parse(response);
     if (titi.GetType() != Json::Type::Array || titi.Length == 0) {
-	return "It's not on mania-exchange !";
+	return "";
     }
 
     int toto = titi[0]["TrackID"];
@@ -190,6 +221,8 @@ void Main()
     print("Connecting to Twitch chat...");
 
     @g_app = cast<CGameManiaPlanet>(GetApp());
+    g_auto_update = false;
+    g_last_challenge_id = "";
 
     auto callbacks = ChatCallbacks();
     if (!Twitch::Connect(callbacks)) {
@@ -203,6 +236,14 @@ void Main()
 	Setting_TwitchNickname,
 	Setting_TwitchChannel
     );
+
+    while (true) {
+	if (shouldAutoUpdate()) {
+	    g_last_challenge_id = GetCurrentMap().EdChallengeId;
+	    startnew(doTheJob);
+	}
+	yield();
+    }
 }
 
 class ChatCallbacks : Twitch::ICallbacks
