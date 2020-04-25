@@ -9,10 +9,13 @@ The idea is to be able to easily set a "!map" command on a twitch chat using Nig
 
 - Install Openplanet: https://openplanet.nl/tutorials/installation
 - Copy the files to C:/Users/[Username]/Openplanet4/Scripts/
+- Open Maniaplanet
+- Open Openplanet toolbar (F3 default)
+- Click on Openplanet > Settings > Twitch commands
 - Go to https://twitchapps.com/tmi/ .
-- Copy the text you get.
-- Edit `TwitchSettings.as` and change the Setting_TwitchToken variable with what you just got.
-- Change also the TwitchNickname and the TwitchChannel variables.
+- Paste the text you get in the field `Twitch Token`.
+- Set the `Twitch channel` field.
+- Tweak other settings if you want.
 
 # Usage
 
@@ -20,4 +23,9 @@ Beware, if you're not on a map, nothing will happen ! :)
 
 - Run Maniaplanet
 - Open Openplanet toolbar
-- Click on Scripts > Twitch > !map command
+- Click on Scripts > Twitch > Manually update command
+==> Done
+
+If you enabled the `Auto update` setting in Openplanet > Settings > Twitch commands, you don't need to click on the `Manually update command` button.
+
+You can call the command in your chat from the game using: Scripts > Twitch > Call command in chat.
