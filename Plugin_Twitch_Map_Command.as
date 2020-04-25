@@ -10,6 +10,9 @@
 // Don't edit below unless you want to try stuff
 ////////////////////////////////////////////////
 
+[Setting name="Auto update"]
+bool Setting_AutoUpdate = false;
+
 [Setting name="Display author name"]
 bool Setting_DisplayAuthorName = true;
 
@@ -26,7 +29,6 @@ string Setting_CommandName = "!map";
 bool Setting_SendToTwitch = true;
 
 CGameManiaPlanet@ g_app;
-bool g_auto_update;
 string g_last_challenge_id;
 
 // About the Map
@@ -223,7 +225,7 @@ void Main()
     print("Connecting to Twitch chat...");
 
     @g_app = cast<CGameManiaPlanet>(GetApp());
-    g_auto_update = false;
+    Setting_AutoUpdate = false;
     g_last_challenge_id = "";
 
     auto callbacks = ChatCallbacks();
@@ -249,7 +251,7 @@ void Main()
 }
 
 bool shouldAutoUpdate() {
-    if (!g_auto_update) {
+    if (!Setting_AutoUpdate) {
 	return false;
     }
 
@@ -296,15 +298,14 @@ void doIt(CGameCtnChallenge@ currentMap) {
 
 void RenderMenu()
 {
-    if (UI::MenuItem("Manually update !map")) {
+    if (UI::MenuItem("Manually update command")) {
 	startnew(doTheJob);
     }
 
-    if (UI::MenuItem("Auto update !map", "", g_auto_update)) {
-	if (g_auto_update) {
-	    g_auto_update = false;
-	} else {
-	    g_auto_update = true;
+    if (UI::MenuItem("Call command in chat")) {
+	if (Setting_SendToTwitch) {
+	    Twitch::SendMessage(Setting_CommandName);
 	}
+	print(Setting_CommandName);
     }
 }
