@@ -2,7 +2,6 @@
 #author "Monkeypac"
 #category "Twitch"
 #include "TwitchChat.as"
-#include "TwitchSettings.as"
 
 /////////////////////////////////////////////////
 // WARNING
@@ -10,23 +9,31 @@
 // Don't edit below unless you want to try stuff
 ////////////////////////////////////////////////
 
-[Setting name="Auto update"]
+[Setting name="Auto update" description="If enabled, the command will be automatically updated when entering a map."]
 bool Setting_AutoUpdate = false;
 
-[Setting name="Display author name"]
+[Setting name="Display author name" description="If enabled, the command will contain the author login."]
 bool Setting_DisplayAuthorName = true;
 
-[Setting name="Display author time"]
+[Setting name="Display author time" description="If enabled, the command will contain the author time MM:SS.mm"]
 bool Setting_DisplayAuthorTime = true;
 
-[Setting name="Display MX link (if available)"]
+[Setting name="Display MX link (if available)" description="If enabled, the command will be filled with the mania-exchange link of the map."]
 bool Setting_DisplayMXLink = true;
 
-[Setting name="Command name"]
+[Setting name="Command name" description="Name of the command to update."]
 string Setting_CommandName = "!map";
 
-[Setting name="DEBUG: Send to twitch"]
+[Setting password name="Twitch token" description="Go to https://twitchapps.com/tmi/ and paste the result here."]
+string Setting_TwitchToken = "";
+
+[Setting name="Twitch channel" description="If your Twitch name is 'qwerty', your twitch channel should be '#qwerty'."]
+string Setting_TwitchChannel = "#channel";
+
+[Setting name="DEBUG: Send to twitch" description="If disabled, the command won't be udpated, just printed in the logs."]
 bool Setting_SendToTwitch = true;
+
+string Setting_TwitchNickname = "Nickname";
 
 CGameManiaPlanet@ g_app;
 string g_last_challenge_id;
