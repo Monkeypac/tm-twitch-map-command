@@ -31,6 +31,15 @@ string GetAuthor(CGameCtnChallenge@ challenge)
     return StripFormatCodes(challenge.AuthorLogin);
 }
 
+string GetAuthorTime(CGameCtnChallenge@ challenge) {
+    float baseTime = challenge.TMObjective_AuthorTime;
+    float allSeconds = baseTime / 1000;
+    int minutes = int(Math::Floor(allSeconds / 60));
+    float seconds = allSeconds % 60;
+
+    return "" + minutes + ":" + seconds;
+}
+
 string StripFormatCodes(string s)
 {
     return Regex::Replace(s, "\\$([0-9a-fA-F]{1,3}|[iIoOnNmMwWsSzZtTgG<>]|[lLhHpP](\\[[^\\]]+\\])?)", "");
@@ -244,8 +253,10 @@ void doTheJob() {
 void doIt(CGameCtnChallenge@ currentMap) {
     auto mapName = GetMapName(currentMap);
     auto author = GetAuthor(currentMap);
-    string message = mapName + " by " + author + "." + GetMapMXLinkMessage(currentMap);
-    Twitch::SendMessage("!commands edit !map " + message);
+    auto authorTime = GetAuthorTime(currentMap);
+    string message = "!commands edit !map " + mapName + " by " + author + " in " + authorTime + "." + GetMapMXLinkMessage(currentMap);
+    Twitch::SendMessage(message);
+    print(message);
     g_last_challenge_id = currentMap.EdChallengeId;
 }
 
