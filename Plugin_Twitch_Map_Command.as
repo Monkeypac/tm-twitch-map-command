@@ -1,4 +1,4 @@
-#name "Twitch !map command"
+#name "Twitch commands"
 #author "Monkeypac"
 #category "Twitch"
 #include "TwitchChat.as"
@@ -9,6 +9,21 @@
 //
 // Don't edit below unless you want to try stuff
 ////////////////////////////////////////////////
+
+[Setting name="Display author name"]
+bool Setting_DisplayAuthorName = true;
+
+[Setting name="Display author time"]
+bool Setting_DisplayAuthorTime = true;
+
+[Setting name="Display MX link (if available)"]
+bool Setting_DisplayMXLink = true;
+
+[Setting name="Command name"]
+string Setting_CommandName = "!map";
+
+[Setting name="DEBUG: Send to twitch"]
+bool Setting_SendToTwitch = true;
 
 CGameManiaPlanet@ g_app;
 bool g_auto_update;
@@ -251,11 +266,30 @@ void doTheJob() {
 }
 
 void doIt(CGameCtnChallenge@ currentMap) {
-    auto mapName = GetMapName(currentMap);
-    auto author = GetAuthor(currentMap);
-    auto authorTime = GetAuthorTime(currentMap);
-    string message = "!commands edit !map " + mapName + " by " + author + " in " + authorTime + "." + GetMapMXLinkMessage(currentMap);
-    Twitch::SendMessage(message);
+    if (Setting_CommandName == "") {
+	Setting_CommandName = "!map";
+    }
+
+    string message = "!commands edit " + Setting_CommandName + " " + GetMapName(currentMap);
+
+    if (Setting_DisplayAuthorName) {
+	message = message + " by " + GetAuthor(currentMap);
+    }
+
+    if (Setting_DisplayAuthorTime) {
+	message = message + " in " + GetAuthorTime(currentMap);
+    }
+
+    message = message + ".";
+
+    if (Setting_DisplayMXLink) {
+	message = message + GetMapMXLinkMessage(currentMap);
+    }
+
+    if (Setting_SendToTwitch) {
+	Twitch::SendMessage(message);
+    }
+
     print(message);
     g_last_challenge_id = currentMap.EdChallengeId;
 }
