@@ -39,6 +39,24 @@ bool Setting_SendToTwitch = true;
 [Setting name="DEBUG: Map-karma path" description="Path for keeping track of the map karmas. Default: Maniaplanet base dir."]
 string Setting_MapKarmaPath = "";
 
+[Setting name="DEBUG: KarmaX"]
+float Setting_KarmaX;
+
+[Setting name="DEBUG: KarmaY"]
+float Setting_KarmaY;
+
+[Setting name="DEBUG: KarmaW"]
+float Setting_KarmaW;
+
+[Setting name="DEBUG: KarmaH"]
+float Setting_KarmaH;
+
+[Setting name="DEBUG: KarmaR"]
+float Setting_KarmaR;
+
+[Setting name="DEBUG: Karma Text Size"]
+float Setting_KarmaTextSize;
+
 string Setting_TwitchNickname = "Nickname";
 
 CGameManiaPlanet@ g_app;
@@ -325,7 +343,14 @@ void SaveVotes() {
     file.Write(buf);
     file.Close();
 
-    g_historyVotes[GetLastMapName()] = g_voteScore;
+    g_historyNames.InsertLast(GetLastMapName());
+    g_historyValues.InsertLast(g_voteScore);
+}
+
+void ResetVotes() {
+    votes.DeleteAll();
+    g_totalVotes = 0;
+    g_voteScore = 0;
 }
 
 void LoadVotes() {
@@ -333,9 +358,7 @@ void LoadVotes() {
 	return;
     }
 
-    votes.DeleteAll();
-    g_totalVotes = 0;
-    g_voteScore = 0;
+    ResetVotes();
 
     string fileName = GetVoteFileName();
     if (!IO::FileExists(fileName)) {
@@ -499,11 +522,12 @@ void RenderMenu()
     }
 }
 
-bool g_chatVoteEnabled = false;
+bool g_chatVoteEnabled = true;
 bool g_chatVoteHistoryEnabled = false;
 float g_voteScore = 0;
 float g_totalVotes = 0;
-dictionary g_historyVotes;
+array<string> g_historyNames;
+array<float> g_historyValues;
 
 void RenderInterface()
 {
@@ -513,9 +537,8 @@ void RenderInterface()
 
     if (g_chatVoteHistoryEnabled) {
 	if (UI::Begin("Map Karma History", g_chatVoteHistoryEnabled)) {
-	    auto keys = g_historyVotes.GetKeys();
-	    for (int i = 0; i < int(g_historyVotes.GetSize()); i ++) {
-		UI::Text(keys[i] + " : " + int(g_historyVotes[keys[i]]) + "%");
+	    for (int i = 0; i < int(g_historyNames.Length); i ++) {
+		UI::Text(g_historyNames[i] + " : " + int(g_historyValues[i]) + "%");
 	    }
 	}
 	UI::End();
@@ -523,8 +546,46 @@ void RenderInterface()
 
     if (onMap() && g_chatVoteEnabled) {
 	if (UI::Begin("Map Karma", g_chatVoteEnabled)) {
-	    UI::SliderFloat("%", g_voteScore, 0, 100);
+	    UI::Text("Current value");
+	    UI::SliderFloat("", g_voteScore, 0, 100);
+	    if (UI::Button("Reset current map")) {
+		ResetVotes();
+	    }
+
+	    UI::Separator();
+
+	    UI::Text("Settings");
+	    Setting_KarmaX = UI::SliderFloat("X", Setting_KarmaX, 0, Draw::GetWidth());
+	    Setting_KarmaY = UI::SliderFloat("Y", Setting_KarmaY, 0, Draw::GetHeight());
+	    Setting_KarmaW = UI::SliderFloat("Width", Setting_KarmaW, 0, Draw::GetWidth());
+	    Setting_KarmaH = UI::SliderFloat("Height", Setting_KarmaH, 0, Draw::GetHeight());
+	    Setting_KarmaR = UI::SliderFloat("Radius", Setting_KarmaR, 0, 180);
+	    Setting_KarmaTextSize = UI::SliderFloat("Text size", Setting_KarmaTextSize, 0, 100);
 	}
 	UI::End();
+    }
+}
+
+void Render() {
+    if (Setting_MapKarma && onMap() && g_chatVoteEnabled) {
+	vec4 purple = vec4(0.38, 0.05, 0.43, 1);
+	vec4 black = vec4(0, 0, 0, 1);
+	vec4 white = vec4(1, 1, 1, 1);
+	vec4 blackTransparent = vec4(0, 0, 0, 0.5);
+
+	vec4 rect = vec4(Setting_KarmaX-10, Setting_KarmaY-10, Setting_KarmaW + 20, Setting_KarmaH + Setting_KarmaH + 10);
+	Draw::FillRect(rect, blackTransparent, Setting_KarmaR);
+
+	if (g_voteScore != 0) {
+	    vec4 rect3 = vec4(Setting_KarmaX, Setting_KarmaY, Setting_KarmaW * (g_voteScore/100), Setting_KarmaH);
+	    Draw::FillRect(rect3, white, Setting_KarmaR);
+	}
+
+	vec4 rect2 = vec4(Setting_KarmaX, Setting_KarmaY, Setting_KarmaW, Setting_KarmaH);
+	Draw::DrawRect(rect2, white, Setting_KarmaR);
+
+	vec2 textPos = vec2(Setting_KarmaX, Setting_KarmaY + Setting_KarmaH);
+	string text = "Map Karma: " + int(g_voteScore) + " % (" + votes.GetSize() + " votes)";
+	Draw::DrawString(textPos, white, text, null, Setting_KarmaTextSize);
     }
 }
