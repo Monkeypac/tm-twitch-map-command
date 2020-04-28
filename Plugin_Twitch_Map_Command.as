@@ -36,26 +36,38 @@ string Setting_TwitchChannel = "#channel";
 [Setting name="DEBUG: Send to twitch" description="If disabled, the command won't be udpated, just printed in the logs."]
 bool Setting_SendToTwitch = true;
 
-[Setting name="DEBUG: Map-karma path" description="Path for keeping track of the map karmas. Default: Maniaplanet base dir."]
+[Setting name="NOT HERE: Map-karma path"]
 string Setting_MapKarmaPath = "";
 
-[Setting name="DEBUG: KarmaX"]
+[Setting name="NOT HERE: Karma X"]
 float Setting_KarmaX;
 
-[Setting name="DEBUG: KarmaY"]
+[Setting name="NOT HERE: Karma Y"]
 float Setting_KarmaY;
 
-[Setting name="DEBUG: KarmaW"]
-float Setting_KarmaW;
+[Setting name="NOT HERE: Karma Width"]
+float Setting_KarmaWidth;
 
-[Setting name="DEBUG: KarmaH"]
-float Setting_KarmaH;
+[Setting name="NOT HERE: Karma Height"]
+float Setting_KarmaHeight;
 
-[Setting name="DEBUG: KarmaR"]
+[Setting name="NOT HERE: Karma Radius"]
+float Setting_KarmaRadius;
+
+[Setting name="NOT HERE: Karma Text Size"]
+float Setting_KarmaTextSize;
+
+[Setting name="NOT HERE: Karma Red"]
 float Setting_KarmaR;
 
-[Setting name="DEBUG: Karma Text Size"]
-float Setting_KarmaTextSize;
+[Setting name="NOT HERE: Karma Green"]
+float Setting_KarmaG;
+
+[Setting name="NOT HERE: Karma Blue"]
+float Setting_KarmaB;
+
+[Setting name="NOT HERE: Karma Alpha"]
+float Setting_KarmaA;
 
 string Setting_TwitchNickname = "Nickname";
 
@@ -554,13 +566,31 @@ void RenderInterface()
 
 	    UI::Separator();
 
-	    UI::Text("Settings");
+	    UI::Text("Common settings");
 	    Setting_KarmaX = UI::SliderFloat("X", Setting_KarmaX, 0, Draw::GetWidth());
 	    Setting_KarmaY = UI::SliderFloat("Y", Setting_KarmaY, 0, Draw::GetHeight());
-	    Setting_KarmaW = UI::SliderFloat("Width", Setting_KarmaW, 0, Draw::GetWidth());
-	    Setting_KarmaH = UI::SliderFloat("Height", Setting_KarmaH, 0, Draw::GetHeight());
-	    Setting_KarmaR = UI::SliderFloat("Radius", Setting_KarmaR, 0, 180);
+
+	    UI::Separator();
+
+	    UI::Text("Advanced settings");
+	    Setting_KarmaWidth = UI::SliderFloat("Width", Setting_KarmaWidth, 0, Draw::GetWidth());
+	    Setting_KarmaHeight = UI::SliderFloat("Height", Setting_KarmaHeight, 0, Draw::GetHeight());
+	    Setting_KarmaRadius = UI::SliderFloat("Radius", Setting_KarmaRadius, 0, 180);
+
+	    UI::NewLine();
+
 	    Setting_KarmaTextSize = UI::SliderFloat("Text size", Setting_KarmaTextSize, 0, 100);
+
+	    UI::NewLine();
+
+	    Setting_KarmaR = UI::SliderFloat("Red", Setting_KarmaR, 0, 1);
+	    Setting_KarmaG = UI::SliderFloat("Green", Setting_KarmaG, 0, 1);
+	    Setting_KarmaB = UI::SliderFloat("Blue", Setting_KarmaB, 0, 1);
+	    Setting_KarmaA = UI::SliderFloat("Alpha", Setting_KarmaA, 0, 1);
+
+	    UI::NewLine();
+
+	    Setting_MapKarmaPath = UI::InputText("Save path", Setting_MapKarmaPath);
 	}
 	UI::End();
     }
@@ -572,20 +602,25 @@ void Render() {
 	vec4 black = vec4(0, 0, 0, 1);
 	vec4 white = vec4(1, 1, 1, 1);
 	vec4 blackTransparent = vec4(0, 0, 0, 0.5);
+	vec4 color = vec4(Setting_KarmaR, Setting_KarmaG, Setting_KarmaB, Setting_KarmaA);
 
-	vec4 rect = vec4(Setting_KarmaX-10, Setting_KarmaY-10, Setting_KarmaW + 20, Setting_KarmaH + Setting_KarmaH + 10);
-	Draw::FillRect(rect, blackTransparent, Setting_KarmaR);
+	// Background
+	vec4 rect = vec4(Setting_KarmaX-10, Setting_KarmaY-10, Setting_KarmaWidth + 20, Setting_KarmaHeight + Setting_KarmaHeight + 10);
+	Draw::FillRect(rect, blackTransparent, Setting_KarmaRadius);
 
+	// Score bar
 	if (g_voteScore != 0) {
-	    vec4 rect3 = vec4(Setting_KarmaX, Setting_KarmaY, Setting_KarmaW * (g_voteScore/100), Setting_KarmaH);
-	    Draw::FillRect(rect3, white, Setting_KarmaR);
+	    vec4 rect3 = vec4(Setting_KarmaX, Setting_KarmaY, Setting_KarmaWidth * (g_voteScore/100), Setting_KarmaHeight);
+	    Draw::FillRect(rect3, color, Setting_KarmaRadius);
 	}
 
-	vec4 rect2 = vec4(Setting_KarmaX, Setting_KarmaY, Setting_KarmaW, Setting_KarmaH);
-	Draw::DrawRect(rect2, white, Setting_KarmaR);
+	// Contour
+	vec4 rect2 = vec4(Setting_KarmaX, Setting_KarmaY, Setting_KarmaWidth, Setting_KarmaHeight);
+	Draw::DrawRect(rect2, color, Setting_KarmaRadius);
 
-	vec2 textPos = vec2(Setting_KarmaX, Setting_KarmaY + Setting_KarmaH);
+	// Text
+	vec2 textPos = vec2(Setting_KarmaX, Setting_KarmaY + Setting_KarmaHeight);
 	string text = "Map Karma: " + int(g_voteScore) + " % (" + votes.GetSize() + " votes)";
-	Draw::DrawString(textPos, white, text, null, Setting_KarmaTextSize);
+	Draw::DrawString(textPos, color, text, null, Setting_KarmaTextSize);
     }
 }
