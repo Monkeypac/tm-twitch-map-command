@@ -76,7 +76,11 @@ namespace Twitch
 			return;
 		}
 
-		g_client.WriteRaw("PRIVMSG " + g_inChannel + " :" + msg + "\n"))
+		if (!g_client.WriteRaw("PRIVMSG " + g_inChannel + " :" + msg + "\n")) {
+		    print("Twitch: Failed to send message");
+		} else {
+		    print("Twitch: Message sent !");
+		}
 	}
 
 	void Update()
