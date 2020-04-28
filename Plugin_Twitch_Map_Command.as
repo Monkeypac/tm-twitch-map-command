@@ -43,6 +43,7 @@ string Setting_TwitchNickname = "Nickname";
 
 CGameManiaPlanet@ g_app;
 string g_last_challenge_id;
+string g_last_challenge_name;
 
 // About the Map
 
@@ -228,7 +229,7 @@ class ChatCallbacks : Twitch::ICallbacks
 {
     void OnMessage(IRC::Message@ msg)
     {
-	if (!g_chatVoteEnabled) {
+	if (!Setting_MapKarma) {
 	    return;
 	}
 	if (GetCurrentMap() is null) {
@@ -266,7 +267,6 @@ void UpdateVotes(string username, int value) {
     votes.Set(username, value);
     g_totalVotes += value;
     g_voteScore = g_totalVotes / votes.GetSize();
-    print("TOTAL: " + g_voteScore + " / " + votes.GetSize() + " = " + g_voteScore);
 }
 
 string GetVoteFileName() {
@@ -287,6 +287,20 @@ string GetMapID() {
     return g_last_challenge_id;
 }
 
+string GetLastMapName() {
+    if (g_last_challenge_name == "") {
+	auto currentMap = GetCurrentMap();
+
+	if (currentMap is null) {
+	    return "";
+	}
+
+	return GetMapName(currentMap);
+    }
+
+    return g_last_challenge_name;
+}
+
 void SaveVotes() {
     if (GetMapID() == "") {
 	return;
@@ -300,7 +314,6 @@ void SaveVotes() {
     file.Open(IO::FileMode::Write);
 
     MemoryBuffer buf;
-    buf.Write(g_totalVotes);
 
     string[]@ keys = votes.GetKeys();
     for (int i = 0; i < int(keys.Length); i ++) {
@@ -311,6 +324,8 @@ void SaveVotes() {
 
     file.Write(buf);
     file.Close();
+
+    g_historyVotes[GetLastMapName()] = g_voteScore;
 }
 
 void LoadVotes() {
@@ -318,7 +333,14 @@ void LoadVotes() {
 	return;
     }
 
+    votes.DeleteAll();
+    g_totalVotes = 0;
+    g_voteScore = 0;
+
     string fileName = GetVoteFileName();
+    if (!IO::FileExists(fileName)) {
+	return;
+    }
 
     print("Loading votes from: " + fileName);
 
@@ -326,10 +348,7 @@ void LoadVotes() {
     file.Open(IO::FileMode::Read);
 
     MemoryBuffer buf = file.Read(file.Size());
-    g_totalVotes = buf.ReadFloat();
 
-    votes.DeleteAll();
-    g_totalVotes = 0;
     while (!buf.AtEnd()) {
 	string username = buf.ReadString(buf.ReadUInt64());
 	int vote = buf.ReadInt32();
@@ -365,6 +384,7 @@ void Main()
     while (true) {
 	if (changedMap()) {
 	    g_last_challenge_id = GetMapID();
+	    g_last_challenge_name = GetMapName(GetCurrentMap());
 	    if (Setting_AutoUpdate) {
 		startnew(doTheJob);
 	    }
@@ -376,6 +396,7 @@ void Main()
 	    if (leftMap()) {
 		SaveVotes();
 		g_last_challenge_id = "";
+		g_last_challenge_name = "";
 	    }
 
 	    if (onMap()) {
@@ -439,6 +460,7 @@ void doIt(CGameCtnChallenge@ currentMap) {
 
     print(message);
     g_last_challenge_id = currentMap.EdChallengeId;
+    g_last_challenge_name = GetMapName(currentMap);
 }
 
 void RenderMenu()
@@ -459,6 +481,10 @@ void RenderMenu()
 	    g_chatVoteEnabled = !g_chatVoteEnabled;
 	}
 
+	if (UI::MenuItem("Show map karma history", "", g_chatVoteHistoryEnabled)) {
+	    g_chatVoteHistoryEnabled = !g_chatVoteHistoryEnabled;
+	}
+
 	if (UI::MenuItem("Save karma to file")) {
 	    if (g_chatVoteEnabled) {
 		SaveVotes();
@@ -474,20 +500,31 @@ void RenderMenu()
 }
 
 bool g_chatVoteEnabled = false;
+bool g_chatVoteHistoryEnabled = false;
 float g_voteScore = 0;
 float g_totalVotes = 0;
+dictionary g_historyVotes;
 
 void RenderInterface()
 {
-    if (!Setting_MapKarma || !g_chatVoteEnabled) {
+    if (!Setting_MapKarma) {
 	return;
     }
 
-    if (UI::Begin("Map Karma", g_chatVoteEnabled)) {
-	auto app = GetApp();
-	auto appClass = Reflection::TypeOf(app);
-
-	UI::SliderFloat("%", g_voteScore, 0, 100);
+    if (g_chatVoteHistoryEnabled) {
+	if (UI::Begin("Map Karma History", g_chatVoteHistoryEnabled)) {
+	    auto keys = g_historyVotes.GetKeys();
+	    for (int i = 0; i < int(g_historyVotes.GetSize()); i ++) {
+		UI::Text(keys[i] + " : " + int(g_historyVotes[keys[i]]) + "%");
+	    }
+	}
+	UI::End();
     }
-    UI::End();
+
+    if (onMap() && g_chatVoteEnabled) {
+	if (UI::Begin("Map Karma", g_chatVoteEnabled)) {
+	    UI::SliderFloat("%", g_voteScore, 0, 100);
+	}
+	UI::End();
+    }
 }
