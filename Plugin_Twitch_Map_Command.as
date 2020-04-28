@@ -36,7 +36,7 @@ string Setting_TwitchChannel = "#channel";
 [Setting name="DEBUG: Send to twitch" description="If disabled, the command won't be udpated, just printed in the logs."]
 bool Setting_SendToTwitch = true;
 
-[Setting name="DEBUG: Map-karma path" description="Path for keeping track of the map karmas"]
+[Setting name="DEBUG: Map-karma path" description="Path for keeping track of the map karmas. Default: Maniaplanet base dir."]
 string Setting_MapKarmaPath = "";
 
 string Setting_TwitchNickname = "Nickname";
