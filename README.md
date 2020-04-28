@@ -15,6 +15,7 @@ The idea is to be able to easily set a "!map" command on a twitch chat using Nig
 - Go to https://twitchapps.com/tmi/ .
 - Paste the text you get in the field `Twitch Token`.
 - Set the `Twitch channel` field.
+- Reload the script using Scripts > Reload scripts.
 - Tweak other settings if you want.
 
 # Usage
