@@ -21,6 +21,9 @@ bool Setting_DisplayAuthorTime = true;
 [Setting name="Display MX link (if available)" description="If enabled, the command will be filled with the mania-exchange link of the map."]
 bool Setting_DisplayMXLink = true;
 
+[Setting name="Map karma" description="If enabled, the chat will be able to vote for map karma."]
+bool Setting_MapKarma = false;
+
 [Setting name="Command name" description="Name of the command to update."]
 string Setting_CommandName = "!map";
 
@@ -32,6 +35,9 @@ string Setting_TwitchChannel = "#channel";
 
 [Setting name="DEBUG: Send to twitch" description="If disabled, the command won't be udpated, just printed in the logs."]
 bool Setting_SendToTwitch = true;
+
+[Setting name="DEBUG: Map-karma path" description="Path for keeping track of the map karmas"]
+string Setting_MapKarmaPath = "";
 
 string Setting_TwitchNickname = "Nickname";
 
@@ -215,14 +221,122 @@ void printJson(Json::Value titi) {
     }
 }
 
+dictionary votes = {};
+
 // Void callbacks for twitch
 class ChatCallbacks : Twitch::ICallbacks
 {
     void OnMessage(IRC::Message@ msg)
-    {}
+    {
+	if (!g_chatVoteEnabled) {
+	    return;
+	}
+	if (GetCurrentMap() is null) {
+	    return;
+	}
+
+	string username = msg.m_prefix.m_user;
+	string message = msg.m_params[1];
+
+	if (message == "--") {
+	    UpdateVotes(username, 0);
+	}
+	if (message == "-") {
+	    UpdateVotes(username, 25);
+	}
+	if (message == "-+" || msg.m_params[1] == "+-") {
+	    UpdateVotes(username, 50);
+	}
+	if (message == "+") {
+	    UpdateVotes(username, 75);
+	}
+	if (message == "++") {
+	    UpdateVotes(username, 100);
+	}
+    }
 
     void OnUserNotice(IRC::Message@ msg)
     {}
+}
+
+void UpdateVotes(string username, int value) {
+    if (votes.Exists(username)) {
+	g_totalVotes -= int(votes[username]);
+    }
+    votes.Set(username, value);
+    g_totalVotes += value;
+    g_voteScore = g_totalVotes / votes.GetSize();
+    print("TOTAL: " + g_voteScore + " / " + votes.GetSize() + " = " + g_voteScore);
+}
+
+string GetVoteFileName() {
+    return Setting_MapKarmaPath + GetMapID() + ".txt";
+}
+
+string GetMapID() {
+    if (g_last_challenge_id == "") {
+	auto currentMap = GetCurrentMap();
+
+	if (currentMap is null) {
+	    return "";
+	}
+
+	return currentMap.EdChallengeId;
+    }
+
+    return g_last_challenge_id;
+}
+
+void SaveVotes() {
+    if (GetMapID() == "") {
+	return;
+    }
+
+    string fileName = GetVoteFileName();
+
+    print("Writing votes to: " + fileName);
+
+    IO::File file(fileName);
+    file.Open(IO::FileMode::Write);
+
+    MemoryBuffer buf;
+    buf.Write(g_totalVotes);
+
+    string[]@ keys = votes.GetKeys();
+    for (int i = 0; i < int(keys.Length); i ++) {
+	buf.Write(uint64(keys[i].Length));
+	buf.Write(keys[i]);
+	buf.Write(int(votes[keys[i]]));
+    }
+
+    file.Write(buf);
+    file.Close();
+}
+
+void LoadVotes() {
+    if (GetMapID() == "") {
+	return;
+    }
+
+    string fileName = GetVoteFileName();
+
+    print("Loading votes from: " + fileName);
+
+    IO::File file(fileName);
+    file.Open(IO::FileMode::Read);
+
+    MemoryBuffer buf = file.Read(file.Size());
+    g_totalVotes = buf.ReadFloat();
+
+    votes.DeleteAll();
+    g_totalVotes = 0;
+    while (!buf.AtEnd()) {
+	string username = buf.ReadString(buf.ReadUInt64());
+	int vote = buf.ReadInt32();
+	UpdateVotes(username, vote);
+    }
+
+    file.Close();
 }
 
 // Main functions
@@ -249,28 +363,52 @@ void Main()
     );
 
     while (true) {
-	if (shouldAutoUpdate()) {
-	    g_last_challenge_id = GetCurrentMap().EdChallengeId;
-	    startnew(doTheJob);
+	if (changedMap()) {
+	    g_last_challenge_id = GetMapID();
+	    if (Setting_AutoUpdate) {
+		startnew(doTheJob);
+	    }
+	    if (Setting_MapKarma) {
+		startnew(LoadVotes);
+	    }
 	}
+	if (Setting_MapKarma) {
+	    if (leftMap()) {
+		SaveVotes();
+		g_last_challenge_id = "";
+	    }
+
+	    if (onMap()) {
+		Twitch::Update();
+	    }
+	}
+
 	yield();
     }
 }
 
-bool shouldAutoUpdate() {
-    if (!Setting_AutoUpdate) {
-	return false;
-    }
-
+bool changedMap() {
     auto currentMap = GetCurrentMap();
 
     return currentMap !is null && currentMap.EdChallengeId != g_last_challenge_id;
+}
+
+bool leftMap() {
+    return GetCurrentMap() is null && g_last_challenge_id != "";
+}
+
+bool onMap() {
+    return GetCurrentMap() !is null;
 }
 
 void doTheJob() {
     auto currentMap = GetCurrentMap();
     if (currentMap !is null) {
 	doIt(currentMap);
+
+	if (g_chatVoteEnabled) {
+	    LoadVotes();
+	}
     }
 }
 
@@ -315,4 +453,41 @@ void RenderMenu()
 	}
 	print(Setting_CommandName);
     }
+
+    if (Setting_MapKarma) {
+	if (UI::MenuItem("Show map karma", "", g_chatVoteEnabled)) {
+	    g_chatVoteEnabled = !g_chatVoteEnabled;
+	}
+
+	if (UI::MenuItem("Save karma to file")) {
+	    if (g_chatVoteEnabled) {
+		SaveVotes();
+	    }
+	}
+
+	if (UI::MenuItem("Load karma from file")) {
+	    if (g_chatVoteEnabled) {
+		LoadVotes();
+	    }
+	}
+    }
+}
+
+bool g_chatVoteEnabled = false;
+float g_voteScore = 0;
+float g_totalVotes = 0;
+
+void RenderInterface()
+{
+    if (!Setting_MapKarma || !g_chatVoteEnabled) {
+	return;
+    }
+
+    if (UI::Begin("Map Karma", g_chatVoteEnabled)) {
+	auto app = GetApp();
+	auto appClass = Reflection::TypeOf(app);
+
+	UI::SliderFloat("%", g_voteScore, 0, 100);
+    }
+    UI::End();
 }
