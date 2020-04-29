@@ -53,6 +53,7 @@ void Main()
 		startnew(Command::Run);
 	    }
 	    if (Context::Setting_MapKarma) {
+		MapKarma::SaveVotes();
 		startnew(MapKarma::LoadVotes);
 	    }
 	}
