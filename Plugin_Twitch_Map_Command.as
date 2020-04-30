@@ -58,7 +58,7 @@ void Main()
 	}
 	if (Context::Setting_MapKarma) {
 	    if (leftMap()) {
-		startnew(MapKarma::SaveVotes());
+		startnew(MapKarma::SaveVotes);
 		Context::g_last_challenge_id = "";
 		Context::g_last_challenge_name = "";
 	    }
