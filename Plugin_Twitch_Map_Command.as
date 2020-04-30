@@ -53,13 +53,12 @@ void Main()
 		startnew(Command::Run);
 	    }
 	    if (Context::Setting_MapKarma) {
-		MapKarma::SaveVotes();
-		startnew(MapKarma::LoadVotes);
+		startnew(MapKarma::SaveAndLoadVotes);
 	    }
 	}
 	if (Context::Setting_MapKarma) {
 	    if (leftMap()) {
-		MapKarma::SaveVotes();
+		startnew(MapKarma::SaveVotes());
 		Context::g_last_challenge_id = "";
 		Context::g_last_challenge_name = "";
 	    }

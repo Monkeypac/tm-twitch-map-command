@@ -107,6 +107,11 @@ namespace MapKarma {
 	file.Close();
     }
 
+    void SaveAndLoadVotes() {
+	SaveVotes();
+	LoadVotes();
+    }
+
     void renderMenu() {
 	if (UI::MenuItem("Show map karma", "", g_chatVoteEnabled)) {
 	    g_chatVoteEnabled = !g_chatVoteEnabled;
