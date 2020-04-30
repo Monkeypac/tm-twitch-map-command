@@ -38,6 +38,7 @@ namespace Command {
 	print(message);
 	Context::g_last_challenge_id = GetMapID(currentMap);
 	Context::g_last_challenge_name = GetMapName(currentMap);
+	UI::ShowNotification("Twitch command " + Context::Setting_CommandName + " updated", 5000);
     }
 
     void renderMenu() {
