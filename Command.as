@@ -92,7 +92,7 @@ namespace Command {
 	    }
 	}
 
-	if (sock is null || sock.Available() == 0) {
+	if (sock is null) {
 	    print("not available !");
 	    return Json::Value();
 	}
