@@ -1,7 +1,7 @@
 
 namespace MapKarma {
-    bool g_chatVoteEnabled = true;
-    bool g_chatVoteHistoryEnabled = true;
+    bool g_chatVoteEnabled = false;
+    bool g_chatVoteHistoryEnabled = false;
 
     dictionary votes = {};
     float g_voteScore = 0;
