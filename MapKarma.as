@@ -100,6 +100,11 @@ namespace MapKarma {
 	g_voteScore = 0;
     }
 
+    void ResetHistory() {
+	history.DeleteAll();
+	historyOrder.RemoveRange(0, historyOrder.Length);
+    }
+
     void LoadVotes() {
 	SetToSave(GetCurrentMap());
 	if (toSaveMapID == "") {
@@ -166,7 +171,7 @@ namespace MapKarma {
 	    UI::End();
 	}
 
-	if (onMap() && g_chatVoteEnabled) {
+	if (g_chatVoteEnabled) {
 	    if (UI::Begin("Map Karma", g_chatVoteEnabled)) {
 		UI::Text("Current value");
 		UI::SliderFloat("", g_voteScore, 0, 100);
@@ -202,16 +207,38 @@ namespace MapKarma {
 
 		Context::Setting_MapKarmaPath = UI::InputText("Save path", Context::Setting_MapKarmaPath);
 	    }
+
+	    if (g_chatVoteHistoryEnabled) {
+		UI::Separator();
+		UI::Separator();
+
+		UI::Text("History settings");
+		if (UI::Button("Reset history")) {
+		    ResetHistory();
+		}
+
+		UI::Separator();
+
+		UI::Text("Common settings");
+		Context::Setting_KarmaHistoryX = UI::SliderFloat("History X", Context::Setting_KarmaHistoryX, 0, Draw::GetWidth());
+		Context::Setting_KarmaHistoryY = UI::SliderFloat("History Y", Context::Setting_KarmaHistoryY, 0, Draw::GetHeight());
+
+		UI::Separator();
+
+		UI::Text("Advanced settings");
+		Context::Setting_KarmaHistoryWidth = UI::SliderFloat("History Width", Context::Setting_KarmaHistoryWidth, 0, Draw::GetWidth());
+		Context::Setting_KarmaHistoryHeight = UI::SliderFloat("History Height", Context::Setting_KarmaHistoryHeight, 0, Draw::GetHeight());
+		UI::NewLine();
+
+		Context::Setting_KarmaHistoryTextSize = UI::SliderFloat("History Text size", Context::Setting_KarmaHistoryTextSize, 0, 100);
+	    }
 	    UI::End();
 	}
     }
 
     void render() {
+	vec4 blackTransparent = vec4(0, 0, 0, 0.5);
 	if (onMap() && g_chatVoteEnabled) {
-	    vec4 purple = vec4(0.38, 0.05, 0.43, 1);
-	    vec4 black = vec4(0, 0, 0, 1);
-	    vec4 white = vec4(1, 1, 1, 1);
-	    vec4 blackTransparent = vec4(0, 0, 0, 0.5);
 	    vec4 color = vec4(Context::Setting_KarmaR, Context::Setting_KarmaG, Context::Setting_KarmaB, Context::Setting_KarmaA);
 
 	    // Background
@@ -232,6 +259,21 @@ namespace MapKarma {
 	    vec2 textPos = vec2(Context::Setting_KarmaX, Context::Setting_KarmaY + Context::Setting_KarmaHeight);
 	    string text = "Map Karma: " + int(g_voteScore) + " % (" + votes.GetSize() + " votes)";
 	    Draw::DrawString(textPos, color, text, null, Context::Setting_KarmaTextSize);
+	}
+
+	if (onMap() && g_chatVoteHistoryEnabled) {
+	    vec4 color = vec4(Context::Setting_KarmaR, Context::Setting_KarmaG, Context::Setting_KarmaB, Context::Setting_KarmaA);
+
+	    // Background
+	    vec4 rect = vec4(Context::Setting_KarmaHistoryX-10, Context::Setting_KarmaHistoryY-10, Context::Setting_KarmaHistoryWidth + 20, Context::Setting_KarmaHistoryHeight + Context::Setting_KarmaHistoryHeight + 10);
+	    Draw::FillRect(rect, blackTransparent, Context::Setting_KarmaRadius);
+
+	    for (int i = 0; i < int(historyOrder.Length); i++) {
+		wstring mapName = historyOrder[historyOrder.Length - 1 - i];
+		string text = mapName + " : " + float(history[mapName]) + "%";
+		vec2 textPos = vec2(Context::Setting_KarmaHistoryX, Context::Setting_KarmaHistoryY + i * Context::Setting_KarmaHistoryTextSize);
+		Draw::DrawString(textPos, color, text, null, Context::Setting_KarmaHistoryTextSize);
+	    }
 	}
     }
 }

@@ -42,6 +42,7 @@ namespace Context {
     [Setting name="NOT HERE: Map-karma path"]
     string Setting_MapKarmaPath = "";
 
+    // Karma
     [Setting name="NOT HERE: Karma X"]
     float Setting_KarmaX;
 
@@ -73,4 +74,20 @@ namespace Context {
     float Setting_KarmaA;
 
     string Setting_TwitchNickname = "Nickname";
+    // Karma history
+    [Setting name="NOT HERE: Karma History X"]
+    float Setting_KarmaHistoryX;
+
+    [Setting name="NOT HERE: Karma History Y"]
+    float Setting_KarmaHistoryY;
+
+    [Setting name="NOT HERE: Karma History Width"]
+    float Setting_KarmaHistoryWidth;
+
+    [Setting name="NOT HERE: Karma History Height"]
+    float Setting_KarmaHistoryHeight;
+
+    [Setting name="NOT HERE: Karma History Text Size"]
+    float Setting_KarmaHistoryTextSize;
+
 }

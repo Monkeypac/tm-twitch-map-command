@@ -1,4 +1,8 @@
 namespace Command {
+
+    // MX Socket
+    Net::Socket@ sock;
+
     void Run() {
 	auto currentMap = GetCurrentMap();
 	if (currentMap !is null) {
@@ -72,18 +76,25 @@ namespace Command {
     // Network
     // Tweaked code from the tutorial
     Json::Value GetMXPayload(string mapId) {
-	auto sock = Net::Socket();
+	if (sock is null) {
+	    @sock = Net::Socket();
 
-	if (!sock.Connect("api.mania-exchange.com", 80)) {
-	    print("Couldn't initiate socket connection.");
-	    return Json::Value();
+	    if (!sock.Connect("api.mania-exchange.com", 80)) {
+		print("Couldn't initiate socket connection.");
+		return Json::Value();
+	    }
+
+	    print(Time::Now + " Connecting to host...");
+
+	    while (!sock.CanWrite()) {
+		sleep(500);
+		print("can't write");
+	    }
 	}
 
-	print(Time::Now + " Connecting to host...");
-
-	while (!sock.CanWrite()) {
-	    sleep(10);
-	    continue;
+	if (sock is null || sock.Available() == 0) {
+	    print("not available !");
+	    return Json::Value();
 	}
 
 	print(Time::Now + " Connected! Sending request...");
@@ -109,7 +120,7 @@ namespace Command {
 	while (true) {
 	    // If there is no data available yet, yield and wait.
 	    while (sock.Available() == 0) {
-		sleep(10);
+		sleep(500);
 		continue;
 	    }
 
@@ -118,7 +129,7 @@ namespace Command {
 	    if (!sock.ReadLine(line)) {
 		// We couldn't get a line at this point in time, so we'll wait a
 		// bit longer.
-		sleep(10);
+		sleep(500);
 		continue;
 	    }
 
@@ -163,7 +174,7 @@ namespace Command {
 	    // we could also only yield if there's no data available, but in this
 	    // example we don't care too much.)
 	    if (contentLength > 0) {
-		sleep(10);
+		sleep(500);
 		continue;
 	    }
 	}
@@ -176,6 +187,15 @@ namespace Command {
 	sock.Close();
 
 	return Json::Parse(response);
+    }
+
+    void Disconnect() {
+	if (sock is null) {
+	    return;
+	}
+
+	sock.Close();
+	@sock = null;
     }
 
     // for debug purposes

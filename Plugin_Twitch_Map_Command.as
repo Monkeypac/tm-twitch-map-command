@@ -53,6 +53,9 @@ void Main()
 	}
 	yield();
     }
+
+    Twitch::Disconnect();
+    Command::Disconnect();
 }
 
 void OnSetCurChallenge(CGameCtnChallenge@ challenge) {
