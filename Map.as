@@ -69,16 +69,15 @@ string GetCurrentMapID() {
     return currentMap.EdChallengeId;
 }
 
-string GetSetCurrentMapID() {
-    auto currentMap = GetCurrentMap();
-
-    if (currentMap is null) {
-	return "";
+void SetLastMap(CGameCtnChallenge@ challenge) {
+    if (challenge is null) {
+	Context::g_last_challenge_id = "";
+	Context::g_last_challenge_name = "";
+	return;
     }
 
-     Context::g_last_challenge_id = currentMap.EdChallengeId;
-
-    return Context::g_last_challenge_id;
+    Context::g_last_challenge_id = GetMapID(challenge);
+    Context::g_last_challenge_name = GetMapName(challenge);
 }
 
 bool changedMap() {

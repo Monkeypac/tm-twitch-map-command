@@ -1,14 +1,17 @@
 
 namespace MapKarma {
-    bool g_chatVoteEnabled = false;
-    bool g_chatVoteHistoryEnabled = false;
+    bool g_chatVoteEnabled = true;
+    bool g_chatVoteHistoryEnabled = true;
 
     dictionary votes = {};
     float g_voteScore = 0;
     float g_totalVotes = 0;
 
-    array<string> g_historyNames;
-    array<float> g_historyValues;
+    dictionary history = {};
+    array<string> historyOrder;
+
+    string toSaveMapID;
+    string toSaveMapName;
 
     void OnMessage(string message, string username) {
 	if (GetCurrentMap() is null) {
@@ -39,18 +42,32 @@ namespace MapKarma {
 	votes.Set(username, value);
 	g_totalVotes += value;
 	g_voteScore = g_totalVotes / votes.GetSize();
+
+	if (!history.Exists(toSaveMapName)) {
+	    historyOrder.InsertLast(toSaveMapName);
+	}
+	history[toSaveMapName] = g_voteScore;
     }
 
-    string GetVoteFileName() {
-	return Context::Setting_MapKarmaPath + GetLastMapID() + ".txt";
+    string GetSaveVoteFileName() {
+	return Context::Setting_MapKarmaPath + toSaveMapID + ".txt";
     }
 
-    void SaveVotes() {
-	if (GetLastMapID() == "") {
+    void SetToSave(CGameCtnChallenge@ map) {
+	if (map is null) {
 	    return;
 	}
 
-	string fileName = GetVoteFileName();
+	toSaveMapID = GetMapID(map);
+	toSaveMapName = GetMapName(map);
+    }
+
+    void SaveVotes() {
+	if (toSaveMapID == "") {
+	    return;
+	}
+
+	string fileName = GetSaveVoteFileName();
 
 	print("Writing votes to: " + fileName);
 
@@ -69,8 +86,12 @@ namespace MapKarma {
 	file.Write(buf);
 	file.Close();
 
-	g_historyNames.InsertLast(GetLastMapName());
-	g_historyValues.InsertLast(g_voteScore);
+	if (history.Exists(toSaveMapName)) {
+	    history.Set(toSaveMapName, g_voteScore);
+	} else {
+	    history.Set(toSaveMapName, g_voteScore);
+	    historyOrder.InsertLast(toSaveMapName);
+	}
     }
 
     void ResetVotes() {
@@ -80,13 +101,14 @@ namespace MapKarma {
     }
 
     void LoadVotes() {
-	if (GetCurrentMapID() == "") {
+	SetToSave(GetCurrentMap());
+	if (toSaveMapID == "") {
 	    return;
 	}
 
 	ResetVotes();
 
-	string fileName = GetVoteFileName();
+	string fileName = GetSaveVoteFileName();
 	if (!IO::FileExists(fileName)) {
 	    return;
 	}
@@ -137,8 +159,8 @@ namespace MapKarma {
     void renderInterface() {
 	if (g_chatVoteHistoryEnabled) {
 	    if (UI::Begin("Map Karma History", g_chatVoteHistoryEnabled)) {
-		for (int i = 0; i < int(g_historyNames.Length); i ++) {
-		    UI::Text(g_historyNames[i] + " : " + int(g_historyValues[i]) + "%");
+		for (int i = 0; i < int(historyOrder.Length); i ++) {
+		    UI::Text(historyOrder[i] + " : " + float(history[historyOrder[i]]) + "%");
 		}
 	    }
 	    UI::End();

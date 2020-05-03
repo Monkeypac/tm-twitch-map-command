@@ -45,30 +45,31 @@ void Main()
     Context::Init();
     InitTwitch();
 
+    MapKarma::SetToSave(GetCurrentMap());
+
     while (true) {
-	if (changedMap()) {
-	    Context::g_last_challenge_id = GetSetCurrentMapID();
-	    Context::g_last_challenge_name = GetMapName(GetCurrentMap());
-	    if (Context::Setting_AutoUpdate) {
-		startnew(Command::Run);
-	    }
-	    if (Context::Setting_MapKarma) {
-		startnew(MapKarma::SaveAndLoadVotes);
-	    }
+	if (onMap()) {
+	    Twitch::Update();
 	}
-	if (Context::Setting_MapKarma) {
-	    if (leftMap()) {
-		startnew(MapKarma::SaveVotes);
-		Context::g_last_challenge_id = "";
-		Context::g_last_challenge_name = "";
-	    }
-
-	    if (onMap()) {
-		Twitch::Update();
-	    }
-	}
-
 	yield();
+    }
+}
+
+void OnSetCurChallenge(CGameCtnChallenge@ challenge) {
+    SetLastMap(challenge);
+
+    if (challenge !is null) {
+	if (Context::Setting_AutoUpdate) {
+	    startnew(Command::Run);
+	}
+
+	if (Context::Setting_MapKarma) {
+	    startnew(MapKarma::SaveAndLoadVotes);
+	}
+    } else {
+	if (Context::Setting_MapKarma) {
+	    startnew(MapKarma::SaveVotes);
+	}
     }
 }
 
