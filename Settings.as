@@ -90,4 +90,6 @@ namespace Context {
     [Setting name="NOT HERE: Karma History Text Size"]
     float Setting_KarmaHistoryTextSize;
 
+    [Setting name="NOT HERE: Karma History Max Display"]
+    int Setting_KarmaHistoryMaxDisplay = 15;
 }

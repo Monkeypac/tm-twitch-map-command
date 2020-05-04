@@ -268,7 +268,7 @@ namespace MapKarma {
 	    vec4 rect = vec4(Context::Setting_KarmaHistoryX-10, Context::Setting_KarmaHistoryY-10, Context::Setting_KarmaHistoryWidth + 20, Context::Setting_KarmaHistoryHeight + Context::Setting_KarmaHistoryHeight + 10);
 	    Draw::FillRect(rect, blackTransparent, Context::Setting_KarmaRadius);
 
-	    for (int i = 0; i < int(historyOrder.Length); i++) {
+	    for (int i = 0; i < int(historyOrder.Length) && i < Context::Setting_KarmaHistoryMaxDisplay; i++) {
 		wstring mapName = historyOrder[historyOrder.Length - 1 - i];
 		string text = mapName + " : " + float(history[mapName]) + "%";
 		vec2 textPos = vec2(Context::Setting_KarmaHistoryX, Context::Setting_KarmaHistoryY + i * Context::Setting_KarmaHistoryTextSize);
