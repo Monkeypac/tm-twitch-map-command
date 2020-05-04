@@ -53,6 +53,10 @@ namespace MapKarma {
 	return Context::Setting_MapKarmaPath + toSaveMapID + ".txt";
     }
 
+    string GetSaveVoteFileMappingName() {
+	return Context::Setting_MapKarmaPath + toSaveMapID + "_mapping.txt";
+    }
+
     void SetToSave(CGameCtnChallenge@ map) {
 	if (map is null) {
 	    return;
@@ -86,6 +90,12 @@ namespace MapKarma {
 	file.Write(buf);
 	file.Close();
 
+	string fileNameMapping = GetSaveVoteFileMappingName();
+	IO::File fileMapping(fileNameMapping);
+	fileMapping.Open(IO::FileMode::Write);
+	fileMapping.WriteLine(toSaveMapName);
+	fileMapping.Close();
+
 	if (history.Exists(toSaveMapName)) {
 	    history.Set(toSaveMapName, g_voteScore);
 	} else {
@@ -113,7 +123,10 @@ namespace MapKarma {
 
 	ResetVotes();
 
-	string fileName = GetSaveVoteFileName();
+	loadVotes(GetSaveVoteFileName());
+    }
+
+    void loadVotes(string fileName) {
 	if (!IO::FileExists(fileName)) {
 	    return;
 	}
@@ -132,6 +145,28 @@ namespace MapKarma {
 	}
 
 	file.Close();
+    }
+
+    void LoadAllVotes() {
+	string[]@ files = IO::IndexFolder(Context::Setting_MapKarmaPath, true);
+
+	for (uint i = 0; i < files.Length; i++) {
+	    string currentFile = files[i];
+
+	    if (currentFile.EndsWith("_mapping.txt")) {
+		continue;
+	    }
+
+	    string fileNameMapping = currentFile.SubStr(0, currentFile.Length - 4) + "_mapping.txt";
+
+	    IO::File fileMapping(fileNameMapping);
+	    fileMapping.Open(IO::FileMode::Read);
+	    string mapName = fileMapping.ReadLine();
+	    fileMapping.Close();
+
+	    toSaveMapName = mapName;
+	    loadVotes(currentFile);
+	}
     }
 
     void SaveAndLoadVotes() {
@@ -215,6 +250,10 @@ namespace MapKarma {
 		UI::Text("History settings");
 		if (UI::Button("Reset history")) {
 		    ResetHistory();
+		}
+
+		if (UI::Button("Load history")) {
+		    LoadAllVotes();
 		}
 
 		UI::Separator();
