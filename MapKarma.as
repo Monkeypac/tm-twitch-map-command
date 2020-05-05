@@ -159,6 +159,10 @@ namespace MapKarma {
 
 	    string fileNameMapping = currentFile.SubStr(0, currentFile.Length - 4) + "_mapping.txt";
 
+	    if (!IO::FileExists(fileNameMapping)) {
+		continue;
+	    }
+
 	    IO::File fileMapping(fileNameMapping);
 	    fileMapping.Open(IO::FileMode::Read);
 	    string mapName = fileMapping.ReadLine();
