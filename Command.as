@@ -1,7 +1,6 @@
 namespace Command {
 
-    // MX Socket
-    Net::Socket@ sock;
+    int retryNb = 3;
 
     void Run() {
 	auto currentMap = GetCurrentMap();
@@ -76,25 +75,20 @@ namespace Command {
     // Network
     // Tweaked code from the tutorial
     Json::Value GetMXPayload(string mapId) {
-	if (sock is null) {
-	    @sock = Net::Socket();
+	int retries = 0;
+	Net::Socket@ sock = Net::Socket();
 
-	    if (!sock.Connect("api.mania-exchange.com", 80)) {
-		print("Couldn't initiate socket connection.");
-		return Json::Value();
-	    }
-
-	    print(Time::Now + " Connecting to host...");
-
-	    while (!sock.CanWrite()) {
-		sleep(500);
-		print("can't write");
-	    }
+	if (!sock.Connect("api.mania-exchange.com", 80)) {
+	    print("Couldn't initiate socket connection.");
+	    return Json::Value();
 	}
 
-	if (sock is null) {
-	    print("not available !");
-	    return Json::Value();
+	print(Time::Now + " Connecting to host...");
+
+	retries = 0;
+	while (!sock.CanWrite() && retries++ < retryNb) {
+	    sleep(500);
+	    print("can't write");
 	}
 
 	print(Time::Now + " Connected! Sending request...");
@@ -111,25 +105,28 @@ namespace Command {
 	    return Json::Value();
 	}
 
-	print(Time::Now + " Waiting for headers...");
+	print(" Waiting for headers...");
 
 	// We are now ready to wait for the response. We'll need to note down
 	// the content length from the response headers as well.
 	int contentLength = 0;
 
 	while (true) {
+	    retries = 0;
 	    // If there is no data available yet, yield and wait.
-	    while (sock.Available() == 0) {
+	    while (sock.Available() == 0 && retries++ < retryNb) {
 		sleep(500);
 		continue;
+	    }
+	    print("" + retries + "/" + retryNb);
+	    if (retries >= retryNb) {
+		return Json::Value();
 	    }
 
 	    // There's buffered data! Try to get a line from the buffer.
 	    string line;
 	    if (!sock.ReadLine(line)) {
-		// We couldn't get a line at this point in time, so we'll wait a
-		// bit longer.
-		sleep(500);
+		sleep(100);
 		continue;
 	    }
 
@@ -148,19 +145,17 @@ namespace Command {
 	    if (line == "") {
 		break;
 	    }
-
-	    // Print the header line.
-	    // print(Time::Now + " \"" + line + "\"");
 	}
 
-	print(Time::Now + " Waiting for response...");
+	print(" Waiting for response...");
 
 	// At this point, we've parsed all the headers. We can now wait for the
 	// actual response body.
 	string response = "";
 
 	// While there is content to read from the body...
-	while (contentLength > 0) {
+	retries = 0;
+	while (contentLength > 0 && retries++ < retryNb) {
 	    // Try to read up to contentLength.
 	    string chunk = sock.ReadRaw(contentLength);
 
@@ -170,32 +165,25 @@ namespace Command {
 	    // Subtract what we've read from the content length.
 	    contentLength -= chunk.Length;
 
-	    // If there's more to read, yield until the next frame. (Not necessary,
-	    // we could also only yield if there's no data available, but in this
-	    // example we don't care too much.)
 	    if (contentLength > 0) {
-		sleep(500);
+		sleep(100);
+		continue;
+	    }
+
+	    while(sock.ReadRaw(256) != "") {
+		sleep(100);
 		continue;
 	    }
 	}
+	if (retries >= retryNb) {
+	    return Json::Value();
+	}
 
-	// We're all done!
-	// print(Time::Now + " All done!");
-	print(Time::Now + " Response: \"" + response + "\"");
+	print("Got response");
 
-	// Close the socket.
 	sock.Close();
 
 	return Json::Parse(response);
-    }
-
-    void Disconnect() {
-	if (sock is null) {
-	    return;
-	}
-
-	sock.Close();
-	@sock = null;
     }
 
     // for debug purposes

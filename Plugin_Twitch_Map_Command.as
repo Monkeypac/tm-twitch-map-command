@@ -55,7 +55,6 @@ void Main()
     }
 
     Twitch::Disconnect();
-    Command::Disconnect();
 }
 
 void OnSetCurChallenge(CGameCtnChallenge@ challenge) {
