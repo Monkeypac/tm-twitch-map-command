@@ -24,9 +24,6 @@ namespace Context {
     [Setting name="Display MX link (if available)" description="If enabled, the command will be filled with the mania-exchange link of the map."]
     bool Setting_DisplayMXLink = true;
 
-    [Setting name="Map karma" description="If enabled, the chat will be able to vote for map karma."]
-    bool Setting_MapKarma = false;
-
     [Setting name="Command name" description="Name of the command to update."]
     string Setting_CommandName = "!map";
 
@@ -36,13 +33,13 @@ namespace Context {
     [Setting name="Twitch channel" description="If your Twitch name is 'qwerty', your twitch channel should be '#qwerty'."]
     string Setting_TwitchChannel = "#channel";
 
-    [Setting name="DEBUG: Send to twitch" description="If disabled, the command won't be udpated, just printed in the logs."]
-    bool Setting_SendToTwitch = true;
-
-    [Setting name="NOT HERE: Map-karma path"]
-    string Setting_MapKarmaPath = "";
+    [Setting name="Map karma" description="If enabled, the chat will be able to vote for map karma."]
+    bool Setting_MapKarma = false;
 
     // Karma
+    [Setting name="Map-karma path"]
+    string Setting_MapKarmaPath = "";
+
     [Setting name="NOT HERE: Karma X"]
     float Setting_KarmaX;
 
@@ -92,4 +89,8 @@ namespace Context {
 
     [Setting name="NOT HERE: Karma History Max Display"]
     int Setting_KarmaHistoryMaxDisplay = 15;
+
+    // Debug
+    [Setting name="DEBUG: Send to twitch" description="If disabled, the command won't be udpated, just printed in the logs."]
+    bool Setting_SendToTwitch = true;
 }
