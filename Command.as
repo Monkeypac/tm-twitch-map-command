@@ -118,7 +118,6 @@ namespace Command {
 		sleep(500);
 		continue;
 	    }
-	    print("" + retries + "/" + retryNb);
 	    if (retries >= retryNb) {
 		return Json::Value();
 	    }
