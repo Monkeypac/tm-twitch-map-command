@@ -5,6 +5,10 @@ Also, this now has a MapKarma feature to use from Twitch chat.
 
 I used https://openplanet.nl/files/22 for this project.
 
+Note that we using this, your game might crash at some point if there are cases I didn't encounter already. Be prepared to that. Disable the plugin when going for a competition if you're afraid of crashes.
+
+/!\ This does not work for Turbo
+
 # Install
 
 - Install Openplanet: https://openplanet.nl/tutorials/installation
@@ -121,3 +125,16 @@ This allows you to force save the karma of the current map to file.
 #### Load karma from file
 
 This allows you to force load the karma of the current map from file.
+
+# Troubleshouting
+
+- I can't get Openplanet's menu to open
+  - Remove the plugin files and retry
+  - Refer to Openplanet's troubleshouting section or see on their discord.
+
+- The notification "!map updated" pops up but I don't get a message in my Twitch chat
+  - Check your channel settings is in lowercase and without typo
+  - Go to your twitch settings at https://www.twitch.tv/settings/connections and Disconnect the "Twitch Chat OAuth Token Generator" then restart the install from the Twitch token part (go to https://twitchapps.com/tmi/)
+
+- Game crashes when I leave a map or when I press the Save karma button
+  - Check that the Karma path you have set is valid, that the directory exists, that the path ends with a `/`
