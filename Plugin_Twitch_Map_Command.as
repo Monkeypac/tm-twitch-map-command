@@ -50,6 +50,7 @@ void Main()
     while (true) {
 	if (onMap()) {
 	    Twitch::Update();
+	    MapKarma::Update();
 	}
 	yield();
     }

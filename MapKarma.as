@@ -12,27 +12,37 @@ namespace MapKarma {
 
     string toSaveMapID;
     string toSaveMapName;
+    int previousLength = 0;
 
     void OnMessage(string message, string username) {
 	if (GetCurrentMap() is null) {
 	    return;
 	}
 
-	if (message == "--") {
-	    UpdateVotes(username, 0);
+	int voteValue = GetVoteValue(message);
+	if (voteValue >= 0) {
+	    UpdateVotes(username, voteValue);
 	}
-	if (message == "-") {
-	    UpdateVotes(username, 25);
+    }
+
+    int GetVoteValue(string vote) {
+	if (vote == "--") {
+	    return 0;
 	}
-	if (message == "-+" || message == "+-") {
-	    UpdateVotes(username, 50);
+	if (vote == "-") {
+	    return 25;
 	}
-	if (message == "+") {
-	    UpdateVotes(username, 75);
+	if (vote == "-+" || vote == "+-") {
+	    return 50;
 	}
-	if (message == "++") {
-	    UpdateVotes(username, 100);
+	if (vote == "+") {
+	    return 75;
 	}
+	if (vote == "++") {
+	    return 100;
+	}
+
+	return -1;
     }
 
     void UpdateVotes(string username, int value) {
@@ -171,6 +181,8 @@ namespace MapKarma {
 	    toSaveMapName = mapName;
 	    loadVotes(currentFile);
 	}
+
+	previousLength = 0;
     }
 
     void SaveAndLoadVotes() {
@@ -198,6 +210,33 @@ namespace MapKarma {
 		LoadVotes();
 	    }
 	}
+    }
+
+    void Update() {
+	auto network = Context::g_app.Network;
+	if (network is null) {
+	    return;
+	}
+	auto lines = network.ChatHistoryLines;
+	for (int i = 0; i < int(lines.Length) - previousLength; i++) {
+	    auto line = lines[i];
+	    auto strippedLine = StripFormatCodes(line).ToLower();
+	    try {
+		auto isMatch = Regex::IsMatch(strippedLine, "^\[.*\] (--|-|-\\+|\\+-|\\+|\\+\\+)$");
+		if (isMatch) {
+		    auto idx = strippedLine.IndexOf("] ");
+		    auto username = strippedLine.SubStr(0, idx+1);
+		    auto vote = strippedLine.SubStr(idx+2, strippedLine.Length);
+		    auto voteValue = GetVoteValue(vote);
+		    if (voteValue >= 0) {
+			UpdateVotes(username, voteValue);
+		    }
+		}
+	    } catch {
+		print("Update from in game chat didn't work");
+	    }
+	}
+	previousLength = lines.Length;
     }
 
     void renderInterface() {
