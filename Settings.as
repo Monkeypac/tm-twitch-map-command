@@ -37,6 +37,9 @@ namespace Context {
     [Setting name="Map karma" description="If enabled, the chat will be able to vote for map karma."]
     bool Setting_MapKarma = false;
 
+    [Setting name="In game chat karma" description="If enabled, in game chat votes will be counted."]
+    bool Setting_MapKarmaGameChat = true;
+
     // Karma
     [Setting name="Map-karma path"]
     string Setting_MapKarmaPath = "";

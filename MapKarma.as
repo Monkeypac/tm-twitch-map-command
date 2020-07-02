@@ -219,6 +219,10 @@ namespace MapKarma {
     }
 
     void Update() {
+	if (!Context::Setting_MapKarmaGameChat) {
+	    return;
+	}
+
 	auto network = Context::g_app.Network;
 	if (network is null) {
 	    return;
