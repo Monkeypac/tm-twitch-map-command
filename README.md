@@ -1,6 +1,8 @@
 # tm-twitch-map-command
 A simple Trackmania command for setting a !map in the Twitch chat.
 
+This works for both Maniaplanet 4 and the official Trackmania game.
+
 Also, this now has a MapKarma feature to use from Twitch chat.
 
 I used https://openplanet.nl/files/22 for this project.
@@ -9,7 +11,20 @@ Note that we using this, your game might crash at some point if there are cases 
 
 /!\ This does not work for Turbo
 
-# Install
+# Install Trackmania
+
+- Install Openplanet next: https://openplanet.nl/tutorials/installation
+- Copy the files to C:/Users/[Username]/OpenplanetNext/Scripts/
+- Open Trackmania
+- Open Openplanet toolbar (F3 default)
+- Click on Openplanet > Settings > Twitch commands
+- Go to https://twitchapps.com/tmi/ .
+- Paste the text you get in the field `Twitch Token`.
+- Set the `Twitch channel` field.
+- Reload the script using Scripts > Reload scripts.
+- DO NOT TOUCH SETTINGS BELOW "Twitch channel" WITHOUT READING THIS WHOLE FILE.
+
+# Install Maniaplanet
 
 - Install Openplanet: https://openplanet.nl/tutorials/installation
 - Copy the files to C:/Users/[Username]/Openplanet4/Scripts/
@@ -41,7 +56,8 @@ You'll get an in game notification when the command is being updated. If your Tw
 
 # Map Karma
 
-The idea is to be able to have the chat vote for the current map you are playing.
+The idea is to be able to have the Twitch chat vote for the current map you are playing.
+Note that by default, in game chat votes will also be counted.
 
 This is based on the same system that most MapKarma systems on TM servers.
 
@@ -76,6 +92,7 @@ For enabling MapKarma, you have two main actions to do:
 - Ensure you can write in that directory without super user permissions
 - Do not forget the `/`
 - Path should look like `D:/mapkarma/` or `C:/Users/mysuperusername/Documents/mapkarma/`
+- Check or uncheck `In game chat karma`
 
 ### Using the MapKarma
 
@@ -93,6 +110,9 @@ The first one is the current value of the karma. It's just informative, you don'
 
 The reset karma button is here to fully reset all votes on a map when you want.
 
+The Move karma window button allows you to move the karma window by using your mouse.
+
+If Map karma history is enabled, you also have a Move karma history window button.
 
 Then, the interesting ones:
 
