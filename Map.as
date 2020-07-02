@@ -10,6 +10,9 @@ string GetMapName(CGameCtnChallenge@ challenge)
 
 string GetAuthor(CGameCtnChallenge@ challenge)
 {
+#if TMNEXT
+    return StripFormatCodes(challenge.AuthorNickName);
+#endif
     return StripFormatCodes(challenge.AuthorLogin);
 }
 
