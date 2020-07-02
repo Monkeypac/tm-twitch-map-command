@@ -104,3 +104,18 @@ void Render() {
 }
 
 
+bool OnMouseButton(bool down, int button, int x, int y)
+{
+    if (Context::Setting_MapKarma) {
+	MapKarma::onMouseButton(down, button, x, y);
+    }
+
+    return true;
+}
+
+void OnMouseMove(int x, int y)
+{
+    if (Context::Setting_MapKarma) {
+	MapKarma::onMouseMove(x, y);
+    }
+}

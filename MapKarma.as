@@ -14,6 +14,12 @@ namespace MapKarma {
     string toSaveMapName;
     int previousLength = 0;
 
+    bool onEditModeKarma = false;
+    bool onModModeKarma = false;
+
+    bool onEditModeHist = false;
+    bool onModModeHist = false;
+
     void OnMessage(string message, string username) {
 	if (GetCurrentMap() is null) {
 	    return;
@@ -257,6 +263,13 @@ namespace MapKarma {
 		    ResetVotes();
 		}
 
+		if (!onModModeHist) {
+		    onModModeKarma = UI::Checkbox("Move karma window", onModModeKarma);
+		}
+		if (g_chatVoteHistoryEnabled && !onModModeKarma) {
+		    onModModeHist = UI::Checkbox("Move history window", onModModeHist);
+		}
+
 		UI::Separator();
 
 		UI::Text("Common settings");
@@ -320,7 +333,11 @@ namespace MapKarma {
 
     void render() {
 	vec4 blackTransparent = vec4(0, 0, 0, 0.5);
-	if (onMap() && g_chatVoteEnabled) {
+	if (g_chatVoteEnabled && onModModeKarma) {
+	    vec4 color = vec4(1, 0, 0, 1);
+	    vec4 rect = vec4(Context::Setting_KarmaX-10, Context::Setting_KarmaY-10, Context::Setting_KarmaWidth + 20, Context::Setting_KarmaHeight + Context::Setting_KarmaHeight + 10);
+	    Draw::FillRect(rect, color, Context::Setting_KarmaRadius);
+	} else if (onMap() && g_chatVoteEnabled) {
 	    vec4 color = vec4(Context::Setting_KarmaR, Context::Setting_KarmaG, Context::Setting_KarmaB, Context::Setting_KarmaA);
 
 	    // Background
@@ -340,10 +357,15 @@ namespace MapKarma {
 	    // Text
 	    vec2 textPos = vec2(Context::Setting_KarmaX, Context::Setting_KarmaY + Context::Setting_KarmaHeight);
 	    string text = "Map Karma: " + int(g_voteScore) + " % (" + votes.GetSize() + " votes)";
+
 	    Draw::DrawString(textPos, color, text, null, Context::Setting_KarmaTextSize);
 	}
 
-	if (onMap() && g_chatVoteHistoryEnabled) {
+	if (g_chatVoteHistoryEnabled && onModModeHist) {
+	    vec4 color = vec4(0, 0, 1, 1);
+	    vec4 rect = vec4(Context::Setting_KarmaHistoryX-10, Context::Setting_KarmaHistoryY-10, Context::Setting_KarmaHistoryWidth + 20, Context::Setting_KarmaHistoryHeight + Context::Setting_KarmaHistoryHeight + 10);
+	    Draw::FillRect(rect, color, Context::Setting_KarmaRadius);
+	} else if (onMap() && g_chatVoteHistoryEnabled) {
 	    vec4 color = vec4(Context::Setting_KarmaR, Context::Setting_KarmaG, Context::Setting_KarmaB, Context::Setting_KarmaA);
 
 	    // Background
@@ -356,6 +378,27 @@ namespace MapKarma {
 		vec2 textPos = vec2(Context::Setting_KarmaHistoryX, Context::Setting_KarmaHistoryY + i * Context::Setting_KarmaHistoryTextSize);
 		Draw::DrawString(textPos, color, text, null, Context::Setting_KarmaHistoryTextSize);
 	    }
+	}
+    }
+
+    bool onMouseButton(bool down, int button, int x, int y)
+    {
+	if(onModModeKarma) {
+	    onEditModeKarma = down;
+	} else if(onModModeHist) {
+	    onEditModeHist = down;
+	}
+	return true;
+    }
+
+    void onMouseMove(int x, int y)
+    {
+	if(onEditModeKarma) {
+	    Context::Setting_KarmaX = x;
+	    Context::Setting_KarmaY = y;
+	} else if(onEditModeHist) {
+	    Context::Setting_KarmaHistoryX = x;
+	    Context::Setting_KarmaHistoryY = y;
 	}
     }
 }
