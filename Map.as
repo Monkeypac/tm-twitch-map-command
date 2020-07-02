@@ -22,6 +22,9 @@ string GetAuthorTime(CGameCtnChallenge@ challenge) {
     int minutes = int(Math::Floor(allSeconds / 60));
     float seconds = allSeconds % 60;
 
+    if (seconds < 10) {
+	return "" + minutes + ":0" + seconds;
+    }
     return "" + minutes + ":" + seconds;
 }
 
