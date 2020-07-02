@@ -48,16 +48,16 @@ namespace Context {
     float Setting_KarmaY;
 
     [Setting name="NOT HERE: Karma Width"]
-    float Setting_KarmaWidth;
+    float Setting_KarmaWidth = 50;
 
     [Setting name="NOT HERE: Karma Height"]
-    float Setting_KarmaHeight;
+    float Setting_KarmaHeight = 50;
 
     [Setting name="NOT HERE: Karma Radius"]
     float Setting_KarmaRadius;
 
     [Setting name="NOT HERE: Karma Text Size"]
-    float Setting_KarmaTextSize;
+    float Setting_KarmaTextSize = 20;
 
     [Setting name="NOT HERE: Karma Red"]
     float Setting_KarmaR;
@@ -80,13 +80,13 @@ namespace Context {
     float Setting_KarmaHistoryY;
 
     [Setting name="NOT HERE: Karma History Width"]
-    float Setting_KarmaHistoryWidth;
+    float Setting_KarmaHistoryWidth = 50;
 
     [Setting name="NOT HERE: Karma History Height"]
-    float Setting_KarmaHistoryHeight;
+    float Setting_KarmaHistoryHeight = 50;
 
     [Setting name="NOT HERE: Karma History Text Size"]
-    float Setting_KarmaHistoryTextSize;
+    float Setting_KarmaHistoryTextSize = 20;
 
     [Setting name="NOT HERE: Karma History Max Display"]
     int Setting_KarmaHistoryMaxDisplay = 15;
