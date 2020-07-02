@@ -52,16 +52,20 @@ void Main()
 	    Twitch::Update();
 	    MapKarma::Update();
 	}
+	if (changedMap()) {
+	    onSetCurChallenge(GetCurrentMap());
+	}
 	yield();
     }
 
     Twitch::Disconnect();
 }
 
-void OnSetCurChallenge(CGameCtnChallenge@ challenge) {
+void onSetCurChallenge(CGameCtnChallenge@ challenge) {
     SetLastMap(challenge);
 
     if (challenge !is null) {
+	print("New map");
 	if (Context::Setting_AutoUpdate) {
 	    startnew(Command::Run);
 	}
@@ -70,6 +74,7 @@ void OnSetCurChallenge(CGameCtnChallenge@ challenge) {
 	    startnew(MapKarma::SaveAndLoadVotes);
 	}
     } else {
+	print("Left map");
 	if (Context::Setting_MapKarma) {
 	    startnew(MapKarma::SaveVotes);
 	}

@@ -3,6 +3,7 @@ namespace Context {
     CGameManiaPlanet@ g_app;
     string g_last_challenge_id;
     string g_last_challenge_name;
+    CGameCtnChallenge@ g_last_challenge;
 
     void Init() {
 	@g_app = cast<CGameManiaPlanet>(GetApp());

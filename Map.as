@@ -73,17 +73,19 @@ void SetLastMap(CGameCtnChallenge@ challenge) {
     if (challenge is null) {
 	Context::g_last_challenge_id = "";
 	Context::g_last_challenge_name = "";
+	@Context::g_last_challenge = null;
 	return;
     }
 
     Context::g_last_challenge_id = GetMapID(challenge);
     Context::g_last_challenge_name = GetMapName(challenge);
+    @Context::g_last_challenge = challenge;
 }
 
 bool changedMap() {
     auto currentMap = GetCurrentMap();
 
-    return currentMap !is null && currentMap.EdChallengeId != Context::g_last_challenge_id;
+    return @currentMap != @Context::g_last_challenge;
 }
 
 bool leftMap() {
