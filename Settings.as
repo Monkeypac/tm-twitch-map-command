@@ -59,6 +59,9 @@ namespace Context {
     [Setting name="NOT HERE: Karma Radius"]
     float Setting_KarmaRadius;
 
+    [Setting name="NOT HERE: Karma ShowBackground"]
+    bool Setting_KarmaShowBackground;
+
     [Setting name="NOT HERE: Karma Text Size"]
     float Setting_KarmaTextSize = 20;
 

@@ -286,6 +286,7 @@ namespace MapKarma {
 		Context::Setting_KarmaWidth = UI::SliderFloat("Width", Context::Setting_KarmaWidth, 0, Draw::GetWidth());
 		Context::Setting_KarmaHeight = UI::SliderFloat("Height", Context::Setting_KarmaHeight, 0, Draw::GetHeight());
 		Context::Setting_KarmaRadius = UI::SliderFloat("Radius", Context::Setting_KarmaRadius, 0, 180);
+		Context::Setting_KarmaShowBackground = UI::Checkbox("Show background", Context::Setting_KarmaShowBackground);
 
 		UI::NewLine();
 
@@ -345,8 +346,10 @@ namespace MapKarma {
 	    vec4 color = vec4(Context::Setting_KarmaR, Context::Setting_KarmaG, Context::Setting_KarmaB, Context::Setting_KarmaA);
 
 	    // Background
-	    vec4 rect = vec4(Context::Setting_KarmaX-10, Context::Setting_KarmaY-10, Context::Setting_KarmaWidth + 20, Context::Setting_KarmaHeight + Context::Setting_KarmaHeight + 10);
-	    Draw::FillRect(rect, blackTransparent, Context::Setting_KarmaRadius);
+	    if (Context::Setting_KarmaShowBackground) {
+		vec4 rect = vec4(Context::Setting_KarmaX-10, Context::Setting_KarmaY-10, Context::Setting_KarmaWidth + 20, Context::Setting_KarmaHeight + Context::Setting_KarmaHeight + 10);
+		Draw::FillRect(rect, blackTransparent, Context::Setting_KarmaRadius);
+	    }
 
 	    // Score bar
 	    if (g_voteScore != 0) {

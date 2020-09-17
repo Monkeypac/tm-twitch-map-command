@@ -122,6 +122,8 @@ You can play with it and see what happens but be sure to set Width and height to
 
 X and Y are for the placement on the screen.
 
+You can also show/hide the transparent background by clicking on the "Show background" checkbox.
+
 The window you are now seeing is the one that'll stay even after you close Openplanet's menu. BUT for it to stay on screen, you have to leave the menu with the settings opened.
 
 So: Click on Scripts > Twitch > Show map karma, edit the settings, press F3.
